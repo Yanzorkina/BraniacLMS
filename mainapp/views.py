@@ -1,6 +1,9 @@
-from django.views.generic import TemplateView
-from datetime import datetime
 
+from django.views.generic import TemplateView
+from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404
+
+from .models import News
 
 class MainPageView(TemplateView):
     template_name = "mainapp/index.html"
@@ -8,14 +11,29 @@ class MainPageView(TemplateView):
 
 class NewsPageView(TemplateView):
     template_name = "mainapp/news.html"
+    paginated_by = 3
 
     def get_context_data(self, **kwargs):
+        page_number = self.request.GET.get(
+            'page',
+            1
+        )
+        paginator = Paginator(News.objects.all(), self.paginated_by)
+        page = paginator.get_page(page_number)
+
         context = super().get_context_data(**kwargs)
 
-        context['news_title'] = 'Новость'
-        context['description'] = 'Предварительное описание новости'
-        context['news_date'] = datetime.now()
-        context['range'] = range(5)
+        context['page'] = page
+
+        return context
+
+class NewsDetailsPageView(TemplateView):
+    template_name = ""
+
+    def get_context_data(self, pk=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['news_obj'] = get_object_or_404(pk=pk)
 
         return context
 
