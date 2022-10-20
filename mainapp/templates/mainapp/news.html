@@ -1,8 +1,8 @@
-{% extends 'mainapp/base.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 
-    {% include 'mainapp/components/top_nav_panel.html' %}
+    {% include 'components/top_nav_panel.html' %}
 
     <div class="container-md">
 
@@ -10,13 +10,13 @@
 
   <div class="col-lg-8">
 
-    {% for new in page %}
+    {% for item in page %}
         <div class="card my-2">
           <div class="card-body">
-            <h5 class="card-title">{{ new.title }}</h5>
-            <h6 class="card-subtitle mb-2 text-muted">{{ news.create_date|date:"Y-m-d h:i:s" }}</h6>
-            <p class="card-text">{{ new.body }}</p>
-            <a href="#" class="card-link">Подробнее</a>
+            <h5 class="card-title">{{ item.title }}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{ news.created|date:"Y-m-d h:i:s" }}</h6>
+            <p class="card-text">{{ item.preambule }}</p>
+            <a href="{% url 'mainapp:news_detail' pk=item.pk %}" class="card-link">Подробнее</a>
           </div>
         </div>
     {% endfor %}
@@ -48,33 +48,33 @@
       </div>
     </div>
   </div>
-
 </div>
 
 <div class="row justify-content-center align-items-center mt-3 mb-n3">
   <nav aria-label="Page navigation example">
     <ul class="pagination">
-        {% if page.has_previous %}
-            <li class="page-item">
-              <a class='page-link' href="?page={{ page.previous_page_number }}">previous</a>
-            </li>
-        {% else %}
-            <li class="page-item disabled">
-              <a class='page-link' href="#">previous</a>
-            </li>
-        {% endif %}
-            <li class="page-item">
-              <a class='page-link' href="#">{{ page.number }}</a>
-            </li>
-        {% if page.has_next %}
-            <li class="page-item">
-              <a class='page-link' href='?page={{ page.next_page_number }}'>next</a>
-            </li>
-        {% else %}
-            <li class="page-item disabled">
-              <a class="page-link" href="#">next</a>
-            </li>
-        {% endif %}
+      {% if page.has_previous %}
+        <li class="page-item">
+            <a class='page-link' href="?page={{ page.previous_page_number }}">previous</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <a class='page-link' href="#">previous</a>
+        </li>
+      {% endif %}
+        <li class="page-item">
+          <a class="page-link" href="#">{{ page.number }}</a>
+        </li>
+      {% if page.has_next %}
+        <li class="page-item">
+          <a class='page-link' href="?page={{ page.next_page_number }}">next</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <a class='page-link' href="#">next</a>
+        </li>
+      {% endif %}
+      
     </ul>
   </nav>
 </div>
@@ -83,5 +83,5 @@
 
     </div>
 
-    {% include 'mainapp/components/footer.html' %}
+    {% include 'components/footer.html' %}
 {% endblock content %}
