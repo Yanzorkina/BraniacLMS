@@ -1,3 +1,7 @@
 {
-    "python.pythonPath": "C:/Users/olegy/Desktop/djangoBasics/BraniacLMS/venv/Scripts"
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }

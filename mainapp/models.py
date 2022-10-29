@@ -3,8 +3,6 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from mainapp.managers.news_manager import NewsManager
 
-
-
 class News(models.Model):
     objects = NewsManager()
     title = models.CharField(max_length=256, verbose_name='Title')

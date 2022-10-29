@@ -1,6 +1,10 @@
 import logging
+import pickle
 from django.conf import settings
 
+from django.contrib import messages
+from django.http.response import HttpResponseRedirect
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.mixins import (
     LoginRequiredMixin,
     PermissionRequiredMixin,
@@ -21,14 +25,9 @@ from django.views.generic import (
     View,
 )
 
-from django.contrib import messages
-from django.http.response import HttpResponseRedirect
-from django.utils.translation import gettext_lazy as _
-
 from mainapp import forms as mainapp_forms
 from mainapp import models as mainapp_models
 from mainapp import tasks as mainapp_tasks
-
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +35,9 @@ logger = logging.getLogger(__name__)
 class MainPageView(TemplateView):
     template_name = "mainapp/index.html"
 
-
 class NewsListView(ListView):
     model = mainapp_models.News
-    paginate_by = 5
+    paginate_by = 2
 
     def get_queryset(self):
         return super().get_queryset().filter(deleted=False)
@@ -54,6 +52,7 @@ class NewsCreateView(PermissionRequiredMixin, CreateView):
 
 class NewsDetailView(DetailView):
     model = mainapp_models.News
+
 
 
 class NewsUpdateView(PermissionRequiredMixin, UpdateView):
@@ -99,7 +98,8 @@ class CoursesDetailView(TemplateView):
             ).count():
                 context["feedback_form"] = mainapp_forms.CourseFeedbackForm(
                     course=context["course_object"], user=self.request.user
-                )
+            )
+
         cached_feedback = cache.get(f"feedback_list_{pk}")
         if not cached_feedback:
             context["feedback_list"] = (
@@ -111,21 +111,29 @@ class CoursesDetailView(TemplateView):
             )
             cache.set(
                 f"feedback_list_{pk}", context["feedback_list"], timeout=300
-            )  # 5 minutes
+            )
+            # 5 minutes
+
+            # Archive object for tests --->
+            with open(
+                f"mainapp/fixtures/006_feedback_list_{pk}.bin", "wb"
+            ) as outf:
+                pickle.dump(context["feedback_list"], outf)
+            # <--- Archive object for tests
         else:
             context["feedback_list"] = cached_feedback
-
+            
         return context
 
 
+  
 class CourseFeedbackFormProcessView(LoginRequiredMixin, CreateView):
     model = mainapp_models.CourseFeedback
     form_class = mainapp_forms.CourseFeedbackForm
 
     def form_valid(self, form):
         self.object = form.save()
-        rendered_card = render_to_string(
-            "mainapp/includes/feedback_card.html", context={"item": self.object})
+        rendered_card = render_to_string("mainapp/includes/feedback_card.html", context={"item": self.object})
         return JsonResponse({"card": rendered_card})
 
 
@@ -175,18 +183,16 @@ class DocSitePageView(TemplateView):
 
 class LogView(TemplateView):
     template_name = "mainapp/log_view.html"
-
     def get_context_data(self, **kwargs):
         context = super(LogView, self).get_context_data(**kwargs)
         log_slice = []
         with open(settings.LOG_FILE, "r") as log_file:
             for i, line in enumerate(log_file):
-                if i == 1000:  # first 1000 lines
+                if i == 1000: # first 1000 lines
                     break
-                log_slice.insert(0, line)  # append at start
+                log_slice.insert(0, line) # append at start
             context["log"] = "".join(log_slice)
         return context
-
 
 class LogDownloadView(UserPassesTestMixin, View):
     def test_func(self):
